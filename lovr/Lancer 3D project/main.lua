@@ -1,54 +1,58 @@
 lovr.mouse = require 'lovr-mouse'
 
+local hex
+local hexInstances = {}
+
+--runs on load
 function lovr.load()
   world = lovr.physics.newWorld()
 
   -- Load a 3D model
   hex = lovr.graphics.newModel('Hex.obj')
-
   hexHalf = lovr.graphics.newModel('HexHalf.obj')
-  -- Use a dark grey background
-  lovr.graphics.setBackgroundColor(.2, .2, .2)
 
-  controllerBoxes = {}
+  createHex(0, 1.5, -2)
+
+  -- Changes background color
+  lovr.graphics.setBackgroundColor(.4, .4, .4)
 end
 
--- A helper function for drawing boxes
-function drawBox(pass, box)
-  local x, y, z = box:getPosition()
-  pass:cube(x, y, z, .25, quat(box:getOrientation()), 'line')
-end
-
-function lovr.draw(hexPass)
-  -- Draw the model
-  hexPass:setColor(0.9, 0.9, 0.9, 1)
-  hexPass:draw(hex, -.5, 1, -3, 1)
-
-  hexPass:setColor(0, 0, 1.0)
-  for i, box in ipairs(controllerBoxes) do
-    drawBox(hexPass, box)
+--Draw Graphics
+function lovr.draw(pass)
+  for _, instance in ipairs(hexInstances) do
+    pass:draw(hex, instance.x, instance.y, instance.z)
   end
 end
 
 function lovr.update(dt)
-  -- Synchronize controllerBoxes with the active controllers
-  for i, hand in ipairs(lovr.headset.getHands()) do
-    if not controllerBoxes[i] then
-      controllerBoxes[i] = world:newBoxCollider(0, 0, 0, .25)
-      controllerBoxes[i]:setKinematic(true)
-    end
-    controllerBoxes[i]:setPosition(lovr.headset.getPosition(hand))
-    controllerBoxes[i]:setOrientation(lovr.headset.getOrientation(hand))
-  end
-
-  if lovr.mouse.isDown(2) then
-    instance(hex, controllerBoxes, controllerBoxes, controllerBoxes, 1)
-  else
-    return
-  end
-
-  -- Update the physics simulation
   world:update(dt)
 
+  local rightMouseDown = lovr.mouse.isDown(2)
 
+  -- Detect a fresh right-click (button just pressed)
+  if rightMouseDown and not wasRightMouseDown then
+    local ox, oy, oz = lovr.headset.getPosition()
+    local dx, dy, dz = lovr.headset.getDirection()
+
+    local x = ox + dx * 2
+    local y = oy + dy * 2
+    local z = oz + dz * 2
+
+    createHex(x, y, z)
+    end
+
+  -- Update debounce state
+  wasRightMouseDown = rightMouseDown
+end
+
+--A Method to make the hexes
+function createHex(x, y, z)
+  table.insert(hexInstances, {x = x, y = y, z = z} )
+  end
+
+-- Method that checks whether there's a tile next to another tile
+function checkNearby()
+  -- raycast to each side to check if there's a tile around
+
+  -- where there are no tiles, create spheres
 end

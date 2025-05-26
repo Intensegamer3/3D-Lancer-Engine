@@ -6,22 +6,19 @@ local placementSpheres = {}
 local hexMap = {}
 local wasRightMouseDown = false
 
--- Hex grid constants
-local HEX_RADIUS = 1.15
-local HEX_WIDTH = HEX_RADIUS * 2
-local HEX_HEIGHT = math.sqrt(3) / 2 * HEX_WIDTH
+-- Flat-topped hex geometry
+local HEX_SIZE = 1
+local SQRT3 = math.sqrt(3)
 
--- Converts axial coords to world position
 function axialToWorld(q, r)
-  local x = HEX_WIDTH * (3 / 4 * q)
-  local z = HEX_HEIGHT * (r + q / 2)
+  local x = HEX_SIZE * SQRT3 * (q + r / 2)
+  local z = HEX_SIZE * 3/2 * r
   return x, 0, z
 end
 
--- Converts world position to axial coords
 function worldToAxial(x, z)
-  local q = (2 / 3 * x) / HEX_RADIUS
-  local r = (-1 / 3 * x + math.sqrt(3) / 3 * z) / HEX_RADIUS
+  local q = (SQRT3/3 * x - 1/3 * z) / HEX_SIZE
+  local r = (2/3 * z) / HEX_SIZE
   return axialRound(q, r)
 end
 
@@ -88,7 +85,7 @@ function lovr.update(dt)
     createHex(q, r)
   end
 
-  wasRightMouseDown = rightMouseDown
+  --wasRightMouseDown = rightMouseDown
 end
 
 -- Handle mouse clicks on placement spheres
@@ -105,6 +102,11 @@ function lovr.mousepressed(x, y, button)
       end
     end
   end
+end
+
+-- Function to edit the color for the hexes
+function colorHex()
+  --DO IT
 end
 
 -- Create a new hex tile and generate neighbor spheres
